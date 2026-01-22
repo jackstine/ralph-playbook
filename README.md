@@ -349,7 +349,7 @@ _Mode selection:_
 
 _Max-iterations:_
 
-- Limits the _outer loop_ (number of tasks attempted; NOT tool calls within a single task)
+- Limits the _task selection loop_ (number of tasks attempted; NOT tool calls within a single task)
 - Each iteration = one fresh context window = one task from IMPLEMENTATION_PLAN.md = one commit
 - `./loop.sh` runs unlimited (manual stop with Ctrl+C)
 - `./loop.sh 20` runs max 20 iterations then stops
