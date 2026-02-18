@@ -392,7 +392,7 @@ _Setup:_ Make the script executable before first use:
 chmod +x loop.sh
 ```
 
-_Core function:_ Continuously feeds prompt file to claude, manages iteration limits, and pushes changes after each task completion.
+_Core function:_ Continuously feeds prompt file to Claude, manages iteration limits, and pushes changes after each task completion.
 
 ### PROMPTS
 
@@ -412,7 +412,7 @@ _Key Language Patterns_ (Geoff's specific phrasing):
 - "don't assume not implemented" (critical - the Achilles' heel)
 - "using parallel subagents" / "up to N subagents"
 - "only 1 subagent for build/tests" (backpressure control)
-- "Think extra hard" (now "Ultrathink)
+- "Think extra hard" (now "Ultrathink")
 - "capture the why"
 - "keep it up to date"
 - "if functionality is missing then it's your job to add it"
