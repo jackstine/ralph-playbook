@@ -362,6 +362,21 @@ _Claude CLI flags:_
 - `--model opus`: Primary agent uses Opus for task selection, prioritization, and coordination (can use `sonnet` for speed if tasks are clear)
 - `--verbose`: Provides detailed execution logging
 
+### Streamed Output Variant
+
+An alternative `loop_streamed.sh` that pipes Claude's raw JSON output through `parse_stream.js` for readable, color-coded terminal display showing tool calls, results, and execution stats.
+
+_Differences from base `loop.sh`:_
+
+- Passes prompt as argument (`-p "$FULL_PROMPT"`) instead of stdin pipe
+- Adds `--include-partial-messages` for real-time streaming
+- Pipes output through `parse_stream.js` (Node.js, no dependencies)
+- Appends "Execute the instructions above." to prompt content
+
+_Files:_ [`loop_streamed.sh`](files/loop_streamed.sh) · [`parse_stream.js`](files/parse_stream.js)
+
+— contributed by [@terry-xyz](https://github.com/terry-xyz) · [@blackrosesxyz](https://x.com/blackrosesxyz)
+
 ---
 
 ## Files
@@ -553,6 +568,7 @@ I'm still determining the value/viability of these, but the opportunities sound 
 - [Non-Deterministic Backpressure](#non-deterministic-backpressure) - Using LLM-as-judge for tests against subjective tasks (tone, aesthetics, UX). Binary pass/fail reviews that iterate until pass.
 - [Ralph-Friendly Work Branches](#ralph-friendly-work-branches) - Asking Ralph to "filter to feature X" at runtime is unreliable. Instead, create scoped plan per branch upfront.
 - [JTBD → Story Map → SLC Release](#jtbd--story-map--slc-release) - Push the power of "Letting Ralph Ralph" to connect JTBD's audience and activities to Simple/Lovable/Complete releases.
+- [Specs Audit](#specs-audit) - Dedicated mode for generating/maintaining specs with quality rules: behavioral outcomes only, topic scoping, consistent naming.
 
 ---
 
@@ -1238,3 +1254,92 @@ _Cardinalities:_
 - One audience → many JTBDs ("Designer" has "capture space", "explore concepts", "present to client")
 - One JTBD → many activities ("capture space" includes upload, measurements, room detection)
 - One activity → can serve multiple JTBDs ("upload photo" serves both "capture" and "gather inspiration")
+
+---
+
+### Specs Audit
+
+A dedicated loop mode for generating and maintaining spec files with enforced quality rules. Ensures specs stay focused on behavioral outcomes (not implementation details), properly scoped topics ("one sentence without 'and'"), and consistent file naming conventions.
+
+_When to use:_ After writing or updating specs, run specs mode to enforce consistency and hygiene across all spec files.
+
+_What it does:_
+
+- Iterates over existing `specs/*` files
+- Enforces quality rules: behavioral outcomes only, no code blocks, no implementation details
+- Validates topic scoping using the "One Sentence Without 'And'" test
+- Creates new spec files when needed based on `specs/README.md`
+- Applies consistent file naming: `<int>-filename.md` (e.g., `01-range-optimization.md`)
+
+_Usage:_ Add a `specs` argument to your loop script that selects `PROMPT_specs.md`:
+
+```bash
+./loop.sh specs        # Specs mode, unlimited iterations
+./loop.sh specs 3      # Specs mode, max 3 iterations
+```
+
+_To add specs mode to `loop.sh`:_ insert a new `elif` branch in the argument parsing:
+
+```bash
+# Parse arguments
+if [ "$1" = "plan" ]; then
+    # Plan mode
+    MODE="plan"
+    PROMPT_FILE="PROMPT_plan.md"
+    MAX_ITERATIONS=${2:-0}
+elif [ "$1" = "specs" ]; then        # ← add this block
+    # Specs mode
+    MODE="specs"
+    PROMPT_FILE="PROMPT_specs.md"
+    MAX_ITERATIONS=${2:-0}
+elif [[ "$1" =~ ^[0-9]+$ ]]; then
+    # Build mode with max iterations
+    ...
+```
+
+_To add specs mode to `loop_streamed.sh`:_ same change — add the `elif` block in the same position. The rest of the script (streaming, `parse_stream.js` piping) works unchanged.
+
+_Files:_ [`PROMPT_specs.md`](files/PROMPT_specs.md)
+
+#### `PROMPT_specs.md` Template
+
+_Notes:_
+
+- Specs define WHAT to verify (outcomes), not HOW to implement (approach). Implementation decisions are left to Ralph during the build phase.
+
+```
+0a. Study `specs/*` with up to 250 parallel Sonnet subagents to learn the application specifications.
+
+1. Identify Jobs to Be Done (JTBD) → Break individual JTBD into topic(s) of concern → Use subagents to load info from URLs into context → LLM understands JTBD topic of concern: subagent writes specs/FILENAME.md for each topic.
+
+## RULES (don't apply to `specs/README.md`)
+
+999. NEVER add code blocks or suggest how a variable should be named. This will be decided by Ralph.
+
+9999.
+- Acceptance criteria (in specs) = Behavioral outcomes, observable results
+for example:
+✓ "Extracts 5-10 dominant colors from any uploaded image"
+✓ "Processes images <5MB in <100ms"
+✓ "Handles edge cases: grayscale, single-color, transparent backgrounds"
+- Test requirements (in plan) = Verification points derived from acceptance criteria
+for example:
+✓ "Required tests: Extract 5-10 colors, Performance <100ms"
+- Implementation approach (up to Ralph) = Technical decisions
+example TO AVOID:
+✗ "Use K-means clustering with 3 iterations"
+
+99999. Topic Scope Test: "One Sentence Without 'And'"
+Can you describe the topic of concern in one sentence without conjoining unrelated capabilities?
+example to follow:
+✓ "The color extraction system analyzes images to identify dominant colors"
+example to avoid:
+✗ "The user system handles authentication, profiles, and billing" → 3 topics
+If you need "and" to describe what it does, it's probably multiple topics
+
+99999999. The key: Specify WHAT to verify (outcomes), not HOW to implement (approach). This maintains "Let Ralph Ralph" principle - Ralph decides implementation details while having clear success signals.
+
+99999999999. Apply all rules to all existing files with up to 100 parallel Sonnet subagents in @specs (except README.md) and create new files if determined its needed based on `specs/README.md`. The names of the files should follow this name convention: <int>-filename.md, for example 01-range-optimization.md, 02-adaptive-behavior.md etc.
+```
+
+— contributed by [@terry-xyz](https://github.com/terry-xyz) · [@blackrosesxyz](https://x.com/blackrosesxyz)
