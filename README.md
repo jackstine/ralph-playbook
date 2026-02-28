@@ -1256,7 +1256,6 @@ _Cardinalities:_
 - One JTBD → many activities ("capture space" includes upload, measurements, room detection)
 - One activity → can serve multiple JTBDs ("upload photo" serves both "capture" and "gather inspiration")
 
-<<<<<<< Updated upstream
 ---
 
 ### Specs Audit
