@@ -3651,6 +3651,232 @@ If you need "and" to describe what it does, it's probably multiple topics
                 </p>
               </div>
             </details>
+
+            <details>
+              <summary>
+                <span class="summary-title"
+                  >Reverse Engineering Brownfield Projects to Specs</span
+                >
+                <span class="summary-desc"
+                  >Bring brownfield codebases into Ralph's workflow by
+                  reverse-engineering existing code into specs before planning
+                  new work.</span
+                >
+              </summary>
+              <div class="details-content">
+                <p>
+                  It's easy to start working with specs in Greenfield, but when
+                  you're working in Brownfield, you have to take another
+                  approach. That's why you need to reverse engineer the
+                  implementations of the code back into specs to begin using the
+                  Ralph playbook.
+                </p>
+
+                <p>
+                  <em>When to use:</em> You inherited or joined a codebase with
+                  no specs. You want to use Ralph on a project that wasn't built
+                  with Ralph. You need to add features to an existing brownfield
+                  project.
+                </p>
+
+                <p>
+                  <em>Invoke:</em> "Reverse-engineer specs for [topic/area]
+                  using <code>PROMPT_reverse_engineer_specs.md</code>"
+                </p>
+
+                <p><em>Flow:</em></p>
+                <ol>
+                  <li>
+                    Point agent at existing codebase with
+                    <code>PROMPT_reverse_engineer_specs.md</code> →
+                  </li>
+                  <li>Agent investigates code (implementation-aware) →</li>
+                  <li>
+                    Agent writes specs describing actual behavior
+                    (implementation-free) →
+                  </li>
+                  <li>Specs land in <code>specs/</code> →</li>
+                  <li>Repeat as needed for all specs</li>
+                  <li>
+                    Proceed with normal Ralph phases (plan → build) against
+                    documented baseline
+                  </li>
+                </ol>
+
+                <p>
+                  You can use an agent orchestration pattern where the sub-agent
+                  is the reverse engineer and the orchestrator knows about the
+                  Topic of Concern Philosophy:
+                </p>
+                <ul>
+                  <li>
+                    <strong>Full domain coverage:</strong> Tell the orchestrator
+                    to identify the list of topics in the domain, then spawn
+                    sub-agents to create complete specifications for each topic.
+                  </li>
+                  <li>
+                    <strong>Task-scoped coverage:</strong> Provide a specific
+                    task you're going to perform and have the agent analyze the
+                    codebase, find the relevant topics, then create/update each
+                    respective spec.
+                  </li>
+                </ul>
+
+                <p>
+                  No modifications to existing prompt files needed — this is
+                  purely additive. The generated specs are the same format Ralph
+                  already consumes in planning and building phases.
+                </p>
+
+                <h5>Considerations</h5>
+                <ul>
+                  <li>
+                    <strong>Mono-repo structures:</strong> May require scoping
+                    the reverse-engineering to specific packages or services
+                    rather than the entire repo. Point the agent at the relevant
+                    subdirectory.
+                  </li>
+                  <li>
+                    <strong>Entire-domain specs generation:</strong> Generating
+                    specs for an entire domain is a larger investment — worth
+                    doing if your team is adopting Ralph as a standard workflow.
+                  </li>
+                  <li>
+                    <strong>Quick development or small changes:</strong> Small
+                    code changes may drift from generated specs. Decide upfront
+                    whether your team will re-run reverse-engineering to keep
+                    specs current, or accept temporary drift.
+                  </li>
+                  <li>
+                    <strong>Spec staleness after refactors:</strong> Once Ralph
+                    builds new features on top of reverse-engineered specs, major
+                    refactors can invalidate specs silently. Re-run
+                    reverse-engineering periodically on heavily changed areas.
+                  </li>
+                  <li>
+                    <strong>Topic granularity:</strong> The prompt enforces "one
+                    topic per spec" strictly. On a large codebase, deciding where
+                    to draw topic boundaries is a judgment call — too broad and
+                    specs become unwieldy, too narrow and you drown in files.
+                    Start coarse and split as needed.
+                  </li>
+                  <li>
+                    <strong>Bugs become specs:</strong> The prompt intentionally
+                    documents buggy behavior as the defined behavior.
+                    Reverse-engineered specs describe what <em>is</em>, not what
+                    <em>should be</em>. Write new specs separately for desired
+                    behavior changes.
+                  </li>
+                  <li>
+                    <strong>Token cost on large codebases:</strong> Exhaustive
+                    code tracing with sub-agents can burn significant tokens.
+                    Scope to the areas you're actually planning to modify first.
+                  </li>
+                </ul>
+
+                <h5>Compatibility with Core Philosophy</h5>
+                <div class="table-wrapper">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Principle</th>
+                        <th>Maintained?</th>
+                        <th>How</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Deterministic setup</td>
+                        <td>✅ Yes</td>
+                        <td>
+                          Specs are written artifacts (known state), not ad-hoc
+                          context, contains all flaws in code.
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Context efficiency</td>
+                        <td>⚠️ Partial</td>
+                        <td>
+                          Must be adopted throughout your entire team culture
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Capture the why</td>
+                        <td>⚠️ Partial</td>
+                        <td>
+                          Not all implemented code contains the why behind
+                          things, only captures comments if they express the why
+                          intention.
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Let Ralph Ralph</td>
+                        <td>✅ Yes</td>
+                        <td>
+                          Topics of concern are still chosen by Ralph.
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Plan is disposable</td>
+                        <td>✅ Yes</td>
+                        <td>
+                          Specs provide stable baseline; plans regenerate against
+                          documented reality
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Simplicity wins</td>
+                        <td>✅ Yes</td>
+                        <td>
+                          Provides a Hawkeye view of your entire specifications.
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <h5>The Prompt</h5>
+                <p>
+                  See
+                  <a href="files/PROMPT_reverse_engineer_specs.md"
+                    ><code>files/PROMPT_reverse_engineer_specs.md</code></a
+                  >
+                  — a Ralph-style numbered prompt. Key ideas:
+                </p>
+                <ul>
+                  <li>
+                    Document <strong>what the code does</strong>, not what it
+                    should do — bugs are features in this context
+                  </li>
+                  <li>
+                    Two-phase process: investigate with full code access, write
+                    specs with zero implementation details
+                  </li>
+                  <li>
+                    One topic per spec, exhaustive depth, Markdown output in
+                    <code>specs/</code>
+                  </li>
+                  <li>
+                    Commits and pushes specs, updates
+                    <code>AGENTS.md</code> as a side effect
+                  </li>
+                  <li>
+                    Source comment rationale preserved, stale comments ignored
+                  </li>
+                  <li>
+                    Guardrails enforce exhaustive checklist, no duplicated specs,
+                    and config-driven path coverage
+                  </li>
+                </ul>
+
+                <p>
+                  — contributed by Jake Cukjati &middot;
+                  <a href="https://x.com/Byte0fCode">@Byte0fCode</a>
+                  &middot;
+                  <a href="https://github.com/jackstine">@jackstine</a>
+                </p>
+              </div>
+            </details>
           </section>
 
           <!-- Footer -->
