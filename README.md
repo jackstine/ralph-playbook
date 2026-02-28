@@ -1350,7 +1350,7 @@ If you need "and" to describe what it does, it's probably multiple topics
 
 ### Reverse Engineering Brownfield Projects to Specs
 
-It's easy to start working with specs in Greenfield, but when you're working in Brownfield, you have to take another approach. That's why you need to reverse engineer the implementations of the code back into the actual specs to start and begin with the ralph playbook.
+It's easy to start working with specs in Greenfield, but when you're working in Brownfield, you have to take another approach. That's why you need to reverse engineer the implementations of the code back into specs to begin using the Ralph playbook.
 
 _When to use:_ You inherited or joined a codebase with no specs. You want to use Ralph on a project that wasn't built with Ralph. You need to add features to an existing brownfield project.
 
@@ -1362,18 +1362,25 @@ _Flow:_
 2. Agent investigates code (implementation-aware) →
 3. Agent writes specs describing actual behavior (implementation-free) →
 4. Specs land in `specs/` →
-5. repeat as needed for all specs
+5. Repeat as needed for all specs
 6. Proceed with normal Ralph phases (plan → build) against documented baseline
 
-You can use an agent orchestration pattern,  where the sub agent is the reverse engineer, and the orchestrator knows about the Topic of Concern Philosophy. Tell the orchestrator to 1. identify the list of topics in the domain 2. create the complete specifications for a particular domain and spawn sub-agents for each topic. OR you can provide a task that you're going to perform and have the agent analyze the codebase, find the topics, then create/update each respective topic.
+You can use an agent orchestration pattern where the sub-agent is the reverse engineer and the orchestrator knows about the Topic of Concern Philosophy:
+
+- **Full domain coverage:** Tell the orchestrator to identify the list of topics in the domain, then spawn sub-agents to create complete specifications for each topic.
+- **Task-scoped coverage:** Provide a specific task you're going to perform and have the agent analyze the codebase, find the relevant topics, then create/update each respective spec.
 
 No modifications to existing prompt files needed — this is purely additive. The generated specs are the same format Ralph already consumes in planning and building phases.
 
 #### Considerations
 
-- **Mono-repo structures** May require scoping the reverse-engineering to specific packages or services rather than the entire repo. Point the agent at the relevant subdirectory.
-- **Entire-domain specs generation** If you want to fully commit this to your development team, then this is something to consider.
-- **Quick development or small changes** Now that you have a way to reverse engineer, whenever you make quick changes to the code base, you don't really need to update the specifications. This is assuming you don't do this.
+- **Mono-repo structures:** May require scoping the reverse-engineering to specific packages or services rather than the entire repo. Point the agent at the relevant subdirectory.
+- **Entire-domain specs generation:** Generating specs for an entire domain is a larger investment — worth doing if your team is adopting Ralph as a standard workflow.
+- **Quick development or small changes:** Small code changes may drift from generated specs. Decide upfront whether your team will re-run reverse-engineering to keep specs current, or accept temporary drift.
+- **Spec staleness after refactors:** Once Ralph builds new features on top of reverse-engineered specs, major refactors can invalidate specs silently. Re-run reverse-engineering periodically on heavily changed areas.
+- **Topic granularity:** The prompt enforces "one topic per spec" strictly. On a large codebase, deciding where to draw topic boundaries is a judgment call — too broad and specs become unwieldy, too narrow and you drown in files. Start coarse and split as needed.
+- **Bugs become specs:** The prompt intentionally documents buggy behavior as the defined behavior. Reverse-engineered specs describe what *is*, not what *should be*. Write new specs separately for desired behavior changes.
+- **Token cost on large codebases:** Exhaustive code tracing with sub-agents can burn significant tokens. Scope to the areas you're actually planning to modify first.
 
 #### Compatibility with Core Philosophy
 
