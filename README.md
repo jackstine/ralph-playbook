@@ -1395,11 +1395,13 @@ No modifications to existing prompt files needed — this is purely additive. Th
 
 #### The Prompt
 
-See [`files/PROMPT_reverse_engineer_specs.md`](files/PROMPT_reverse_engineer_specs.md) for the full reverse-engineering guide. Key ideas:
+See [`files/PROMPT_reverse_engineer_specs.md`](files/PROMPT_reverse_engineer_specs.md) — a Ralph-style numbered prompt. Key ideas:
 
 - Document **what the code does**, not what it should do — bugs are features in this context
 - Two-phase process: investigate with full code access, write specs with zero implementation details
-- One topic per spec, exhaustive depth
-- XML output format matching Ralph's existing spec consumption
+- One topic per spec, exhaustive depth, Markdown output in `specs/`
+- Commits and pushes specs, updates `AGENTS.md` as a side effect
+- Source comment rationale preserved via `<rationale source="comment">`, stale comments ignored
+- Guardrails enforce exhaustive checklist, no duplicated specs, and config-driven path coverage
 
 — contributed by Jake Cukjati · [@Byte0fCode](https://x.com/Byte0fCode) · [@jackstine](https://github.com/jackstine)
