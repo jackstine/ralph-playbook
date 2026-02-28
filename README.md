@@ -569,6 +569,7 @@ I'm still determining the value/viability of these, but the opportunities sound 
 - [Ralph-Friendly Work Branches](#ralph-friendly-work-branches) - Asking Ralph to "filter to feature X" at runtime is unreliable. Instead, create scoped plan per branch upfront.
 - [JTBD → Story Map → SLC Release](#jtbd--story-map--slc-release) - Push the power of "Letting Ralph Ralph" to connect JTBD's audience and activities to Simple/Lovable/Complete releases.
 - [Specs Audit](#specs-audit) - Dedicated mode for generating/maintaining specs with quality rules: behavioral outcomes only, topic scoping, consistent naming.
+- [Reverse Engineering Brownfield Projects to Specs](#reverse-engineering-brownfield-projects-to-specs) - Bring brownfield codebases into Ralph's workflow by reverse-engineering existing code into specs before planning new work.
 
 ---
 
@@ -1255,6 +1256,7 @@ _Cardinalities:_
 - One JTBD → many activities ("capture space" includes upload, measurements, room detection)
 - One activity → can serve multiple JTBDs ("upload photo" serves both "capture" and "gather inspiration")
 
+<<<<<<< Updated upstream
 ---
 
 ### Specs Audit
@@ -1343,3 +1345,54 @@ If you need "and" to describe what it does, it's probably multiple topics
 ```
 
 — contributed by [@terry-xyz](https://github.com/terry-xyz) · [@blackrosesxyz](https://x.com/blackrosesxyz)
+
+---
+
+### Reverse Engineering Brownfield Projects to Specs
+
+It's easy to start working with specs in Greenfield, but when you're working in Brownfield, you have to take another approach. That's why you need to reverse engineer the implementations of the code back into the actual specs to start and begin with the ralph playbook.
+
+_When to use:_ You inherited or joined a codebase with no specs. You want to use Ralph on a project that wasn't built with Ralph. You need to add features to an existing brownfield project.
+
+_Invoke:_ "Reverse-engineer specs for [topic/area] using `PROMPT_reverse_engineer_specs.md`"
+
+_Flow:_
+
+1. Point agent at existing codebase with `PROMPT_reverse_engineer_specs.md` →
+2. Agent investigates code (implementation-aware) →
+3. Agent writes specs describing actual behavior (implementation-free) →
+4. Specs land in `specs/` →
+5. repeat as needed for all specs
+6. Proceed with normal Ralph phases (plan → build) against documented baseline
+
+You can use an agent orchestration pattern,  where the sub agent is the reverse engineer, and the orchestrator knows about the Topic of Concern Philosophy. Tell the orchestrator to 1. identify the list of topics in the domain 2. create the complete specifications for a particular domain and spawn sub-agents for each topic. OR you can provide a task that you're going to perform and have the agent analyze the codebase, find the topics, then create/update each respective topic.
+
+No modifications to existing prompt files needed — this is purely additive. The generated specs are the same format Ralph already consumes in planning and building phases.
+
+#### Considerations
+
+- **Mono-repo structures** May require scoping the reverse-engineering to specific packages or services rather than the entire repo. Point the agent at the relevant subdirectory.
+- **Entire-domain specs generation** If you want to fully commit this to your development team, then this is something to consider.
+- **Quick development or small changes** Now that you have a way to reverse engineer, whenever you make quick changes to the code base, you don't really need to update the specifications. This is assuming you don't do this.
+
+#### Compatibility with Core Philosophy
+
+| Principle             | Maintained? | How                                                         |
+| --------------------- | ----------- | ----------------------------------------------------------- |
+| Deterministic setup   | ✅ Yes      | Specs are written artifacts (known state), not ad-hoc context, contains all flaws in code. |
+| Context efficiency    | ⚠️ Partial  | Must be adopted throughout your entire team culture |
+| Capture the why       | ⚠️ Partial  | Not all implemented code contains the why behind things, only captures comments if they express the why intention. |
+| Let Ralph Ralph       | ✅ Yes      | Topics of concern are still chosen by Ralph. |
+| Plan is disposable    | ✅ Yes      | Specs provide stable baseline; plans regenerate against documented reality |
+| Simplicity wins       | ✅ Yes      | Provides a Hawkeye view of your entire specifications. |
+
+#### The Prompt
+
+See [`files/PROMPT_reverse_engineer_specs.md`](files/PROMPT_reverse_engineer_specs.md) for the full reverse-engineering guide. Key ideas:
+
+- Document **what the code does**, not what it should do — bugs are features in this context
+- Two-phase process: investigate with full code access, write specs with zero implementation details
+- One topic per spec, exhaustive depth
+- XML output format matching Ralph's existing spec consumption
+
+— contributed by Jake Cukjati · [@Byte0fCode](https://x.com/Byte0fCode) · [@jackstine](https://github.com/jackstine)
